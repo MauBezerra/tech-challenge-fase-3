@@ -1,21 +1,46 @@
-import streamlit as st
-import pandas as pd
-import joblib
-import numpy as np
+# 1. CONFIGURAÇÃO INICIAL DO APP
+# -------------------------------
+# Importações necessárias para o funcionamento da aplicação
+import streamlit as st  # Framework para criar aplicações web
+import pandas as pd     # Manipulação de dados
+import joblib          # Para carregar o modelo treinado
+import numpy as np      # Operações numéricas
 
-st.set_page_config(page_title="Previsão de Evasão Acadêmica", layout="centered")
-st.title("Previsão de Evasão Acadêmica de Estudantes")
+# Configurações iniciais da página
+st.set_page_config(
+    page_title="Previsão de Evasão Acadêmica",  # Título exibido na aba do navegador
+    layout="centered"                          # Layout centralizado
+)
+st.title("Previsão de Evasão Acadêmica de Estudantes")  # Título principal da aplicação
 
-# Carregar modelo
+# 2. CARREGAMENTO DO MODELO
+# -------------------------------
+# Função com cache para carregar o modelo apenas uma vez
+# @st.cache_resource evita recarregar o modelo a cada interação do usuário
 @st.cache_resource
 def load_model():
+    """
+    Carrega o modelo treinado salvo no arquivo 'modelo_evasao.joblib'
+    Retorna:
+        O modelo de machine learning treinado e pronto para previsões
+    """
     return joblib.load('modelo_evasao.joblib')
 
+# Carrega o modelo uma vez e reutiliza para todas as interações
 clf = load_model()
 
-# Função para entrada de dados
+# 3. INTERFACE DE ENTRADA DE DADOS
+# -------------------------------
+# Função que cria o formulário para coleta de dados do estudante
 def user_input_features():
+    """
+    Cria a interface para entrada de dados do estudante usando widgets do Streamlit
+    Retorna:
+        DataFrame pandas com os dados formatados para o modelo
+    """
     st.header("Insira os dados do estudante:")
+    
+    # Dados demográficos
     estado_civil = st.selectbox('Estado Civil', ['Solteiro', 'Casado', 'Divorciado', 'Viúvo'])
     curso = st.selectbox('Curso', [
         'Design de Animação e Multimédia',
@@ -83,6 +108,7 @@ def user_input_features():
     taxa_inflacao = st.number_input('Taxa de Inflação (%)', min_value=0.0, max_value=100.0, value=5.0)
     pib = st.number_input('PIB', min_value=0.0, max_value=10.0, value=1.0)
     
+    # Organiza os dados em um dicionário
     data = {
         'EstadoCivil': estado_civil,
         'Curso': curso,
@@ -112,13 +138,22 @@ def user_input_features():
         'TaxaInflacao': taxa_inflacao,
         'PIB': pib
     }
+    
+    # Converte o dicionário em um DataFrame pandas
     return pd.DataFrame([data])
 
+# 4. EXECUÇÃO DA PREVISÃO
+# -------------------------------
+# Chama a função de entrada de dados
 df_input = user_input_features()
 
+# Botão para disparar a previsão
 if st.button('Prever Evasão'):
+    # Realiza a previsão usando o modelo carregado
     pred = clf.predict(df_input)[0]
     proba = clf.predict_proba(df_input)[0,1]
+    
+    # Exibe o resultado da previsão
     if pred == 1:
         st.error(f"Probabilidade de evasão: {proba:.2%} (Desistente)")
     else:
