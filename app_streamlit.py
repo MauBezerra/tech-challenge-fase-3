@@ -5,6 +5,7 @@ import streamlit as st  # Framework para criar aplicações web
 import pandas as pd     # Manipulação de dados
 import joblib          # Para carregar o modelo treinado
 import numpy as np      # Operações numéricas
+import os              # Para manipulação de caminhos
 
 # Configurações iniciais da página
 st.set_page_config(
@@ -24,7 +25,7 @@ def load_model():
     Retorna:
         O modelo de machine learning treinado e pronto para previsões
     """
-    return joblib.load('modelo_evasao.joblib')
+    return joblib.load(os.path.join(os.path.dirname(__file__), 'modelo_evasao.joblib'))
 
 # Carrega o modelo uma vez e reutiliza para todas as interações
 clf = load_model()
